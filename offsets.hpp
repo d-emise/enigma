@@ -331,7 +331,7 @@ namespace Offsets {
     namespace Misc {
          inline constexpr uintptr_t Adornee = 0xf0;
          inline constexpr uintptr_t AnimationId = 0xc0;
-         inline constexpr uintptr_t StringLength = 0x0;
+         inline constexpr uintptr_t StringLength = 0x10;
          inline constexpr uintptr_t Value = 0xb8;
     }
 
