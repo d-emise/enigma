@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enigma - lua docs</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="description" content="A practical reference for Enigma's Lua API, with examples for drawing, script windows, input, game state, camera, movement, lighting, and math helpers.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #111215;            /* Dark Charcoal Grey background */
+            --panel: #18191d;         /* Dark Grey panels */
+            --panel-secondary: #222328; /* Light Grey relative panels */
+            --accent-pink: #800020;    /* Premium Burgundy brand accent */
+            --accent-cyan: #be123c;    /* Crimson highlights */
+            --text-main: #e2e8f0;      /* Clearer contrasting main text */
+            --text-muted: #8892b0;
+            --border: rgba(255, 255, 255, 0.08);
+            --code-bg: #1e1f22;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            zoom: 1.08; /* Zoom scaling to match forum */
+            text-transform: lowercase; /* Lowercase theme */
+        }
+        
+        input, textarea, code, pre {
+            text-transform: none !important;
+        }
+        code, pre {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+        code, pre, .code-block, .syntax-highlight {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Navigation --- */
+        aside {
+            width: 280px;
+            border-right: 1px solid var(--border);
+            padding: 40px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .aside-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .aside-title span {
+            color: var(--accent-pink);
+        }
+
+        .back-link {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-bottom: 30px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--accent-cyan);
+        }
+
+        .menu-group {
+            margin-bottom: 24px;
+        }
+
+        .menu-group-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .menu-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu-links a {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .menu-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        /* --- Main Content --- */
+        main {
+            flex: 1;
+            padding: 40px 40px 80px 40px;
+            max-width: 900px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .lead {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #fff;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h2::before {
+            content: '';
+            color: var(--accent-pink);
+        }
+
+        h3 {
+            font-size: 15px;
+            color: #fff;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        ul.bullets {
+            list-style: none;
+            margin-bottom: 16px;
+            padding-left: 10px;
+        }
+
+        ul.bullets li {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: flex;
+            gap: 8px;
+        }
+
+        ul.bullets li::before {
+            content: '-';
+            color: var(--accent-cyan);
+        }
+
+        .api-card {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .api-signature {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+        }
+
+        .api-desc {
+            color: var(--text-main);
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+
+        .param-table th, .param-table td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .param-table th {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .param-name {
+            color: var(--accent-pink);
+        }
+
+        .param-type {
+            color: var(--accent-cyan);
+        }
+
+        pre {
+            background: var(--code-bg);
+            border-left: 2px solid var(--accent-pink);
+            padding: 14px 18px;
+            border-radius: 0 4px 4px 0;
+            font-size: 12px;
+            overflow-x: auto;
+            color: #a9b7c6;
+            margin-top: 12px;
+        }
+
+        code {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* --- Scrollbar --- */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-pink);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <a href="index.html" class="aside-title">enigma<span>.docs</span></a>
+            <a href="index.html" class="back-link">&lt;- back to home</a>
+            
+            <div class="menu-group">
+                <div class="menu-group-title">concepts</div>
+                <ul class="menu-links">
+                    <li><a href="#quick-start">start here</a></li>
+                    <li><a href="#understanding-memory">roblox memory structure</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">base api</div>
+                <ul class="menu-links">
+                    <li><a href="#console">console & prints</a></li>
+                    <li><a href="#draw">drawing utils</a></li>
+                    <li><a href="#projection">world to screen</a></li>
+                    <li><a href="#native-esp">native esp</a></li>
+                    <li><a href="#script-ui">script ui</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">raw memory</div>
+                <ul class="menu-links">
+                    <li><a href="#memory-operations">reading & writing</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">hierarchy</div>
+                <ul class="menu-links">
+                    <li><a href="#roots">get roots</a></li>
+                    <li><a href="#navigation">finding children</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">parts & properties</div>
+                <ul class="menu-links">
+                    <li><a href="#properties">manipulators</a></li>
+                    <li><a href="#utilities">state helpers</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-title">more lua helpers</div>
+                <ul class="menu-links">
+                    <li><a href="#input">keyboard & mouse</a></li>
+                    <li><a href="#feedback">sound & clipboard</a></li>
+                    <li><a href="#game-state">players & game state</a></li>
+                    <li><a href="#camera-parts">camera & movement</a></li>
+                    <li><a href="#lighting">lighting & values</a></li>
+                    <li><a href="#math">math helpers</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main>
+            <h1>enigma API reference</h1>
+        <p class="lead">a practical reference for the Lua functions available in Enigma. It covers the basics, shows what each call expects, and includes small examples you can adapt. Function names are case-sensitive.</p>
+
+            <section id="quick-start">
+                <h2>start here</h2>
+                <p>Scripts run in Enigma's Lua 5.1 environment, outside Roblox's built-in Lua runtime. The API lives in the global <code>enigma</code> table. For screen drawings and script ESP, register an <code>enigma.on_render</code> callback; it runs once per frame.</p>
+                <pre><code>local workspace = enigma.get_workspace()
+local players = enigma.get_players()
+local me = enigma.get_local_player()
+
+print("workspace: " .. tostring(workspace))
+print("players service: " .. tostring(players))
+print("local player: " .. tostring(me))
+
+enigma.on_render(function()
+    enigma.draw_text(20, 20, "script is running", 255, 255, 255, 255)
+end)</code></pre>
+                <p>Addresses returned by hierarchy helpers are numeric addresses, not Roblox Lua objects. Check for <code>nil</code> before passing one to another function. A failed lookup commonly means the instance is not present yet, or its name differs from what the script expects.</p>
+            </section>
+
+            <!-- Memory Architecture Section -->
+            <section id="understanding-memory">
+                <h2>understanding roblox memory structures</h2>
+                <p>Enigma runs outside Roblox's own Lua state. Its hierarchy helpers read the game's current instance data and return addresses that scripts can pass back to Enigma functions. These are not Roblox <code>Instance</code> values, so Roblox methods such as <code>FindFirstChild</code> are not available on them.</p>
+                <p>Prefer the named helpers in this reference over hard-coded offsets. Game updates can change memory layouts, and writing to an address you have not verified can crash the client or produce unpredictable results.</p>
+                
+                <h3>how physical parts are structured:</h3>
+                <p>For common part data, use <code>get_position</code>, <code>set_position</code>, <code>get_size</code>, <code>set_size</code>, and the rotation helpers. They accept an instance address and handle the part data lookup internally.</p>
+            </section>
+
+            <!-- Base API -->
+            <section id="console">
+                <h2>console & prints</h2>
+                <p>basic console operations used for debugging and displaying logs inside the script GUI window.</p>
+                
+                <div class="api-card">
+                    <div class="api-signature">print(...) / enigma.log(string text)</div>
+                    <div class="api-desc">writes a string to the Enigma script console. <code>print</code> and <code>enigma.log</code> accept a string; use <code>tostring</code> to format numbers or booleans.</div>
+                    <pre><code>print("local player: " .. enigma.get_player_name())
+enigma.log("script started")</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.clear_console()</div>
+                    <div class="api-desc">clears all text entries currently outputted to the console window.</div>
+                    <pre><code>enigma.clear_console()</code></pre>
+                </div>
+            </section>
+
+            <!-- Drawing Overlays -->
+            <section id="draw">
+                <h2>drawing api</h2>
+                <p>The drawing API puts shapes on Enigma's overlay. Register one <code>enigma.on_render</code> callback and issue drawing calls inside it; the draw list is rebuilt each frame, so calls made once at script startup will not stay on screen.</p>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_line(x1, y1, x2, y2, r, g, b, a, thickness)</div>
+                    <div class="api-desc">renders a 2D line between two screen positions.</div>
+                    <table class="param-table">
+                        <tr><th>param</th><th>type</th><th>description</th></tr>
+                        <tr><td class="param-name">x1, y1</td><td class="param-type">float</td><td>start screen position</td></tr>
+                        <tr><td class="param-name">x2, y2</td><td class="param-type">float</td><td>end screen position</td></tr>
+                        <tr><td class="param-name">r, g, b, a</td><td class="param-type">int</td><td>RGBA color colors (0 to 255)</td></tr>
+                        <tr><td class="param-name">thickness</td><td class="param-type">float</td><td>line width in pixels</td></tr>
+                    </table>
+                    <pre><code>enigma.draw_line(100, 100, 300, 100, 255, 0, 127, 255, 2.0)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_circle(x, y, radius, r, g, b, a, thickness, filled)</div>
+                    <div class="api-desc">renders a circle outline or a solid filled circle.</div>
+                    <table class="param-table">
+                        <tr><th>param</th><th>type</th><th>description</th></tr>
+                        <tr><td class="param-name">x, y</td><td class="param-type">float</td><td>center screen position</td></tr>
+                        <tr><td class="param-name">radius</td><td class="param-type">float</td><td>circle radius in pixels</td></tr>
+                        <tr><td class="param-name">r, g, b, a</td><td class="param-type">int</td><td>RGBA color</td></tr>
+                        <tr><td class="param-name">thickness</td><td class="param-type">float</td><td>outline border width (ignored if filled is true)</td></tr>
+                        <tr><td class="param-name">filled</td><td class="param-type">bool</td><td>true draws a solid filled circle, false draws an outline</td></tr>
+                    </table>
+                    <pre><code>-- draw target aim fov circle
+enigma.draw_circle(960, 540, 150, 0, 240, 255, 255, 1.5, false)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_rect(x1, y1, x2, y2, r, g, b, a, thickness, filled)</div>
+                    <div class="api-desc">renders a rectangle from top-left (x1, y1) to bottom-right (x2, y2).</div>
+                    <pre><code>enigma.draw_rect(10, 10, 200, 60, 20, 20, 25, 200, 1.0, true) -- solid background
+enigma.draw_rect(10, 10, 200, 60, 255, 0, 127, 255, 1.5, false) -- hot pink outline</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_text(x, y, text, r, g, b, a)</div>
+                    <div class="api-desc">draws simple text on the screen overlay starting from the top-left (x, y) coordinates.</div>
+                    <pre><code>enigma.draw_text(20, 20, "enigma engine active", 0, 240, 255, 255)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_triangle(x1, y1, x2, y2, x3, y3, r, g, b, a, thickness, filled)</div>
+                    <div class="api-desc">draws a triangle between three screen points. Color defaults to white, thickness to 1, and <code>filled</code> to false.</div>
+                    <pre><code>enigma.draw_triangle(100, 100, 140, 160, 60, 160, 255, 220, 80, 255, 2, true)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_corner_box(left, top, right, bottom, r, g, b, a, thickness)</div>
+                    <div class="api-desc">draws short lines at the four corners of a screen-space rectangle. Color defaults to white and thickness to 1.</div>
+                    <pre><code>enigma.draw_corner_box(100, 80, 180, 220, 255, 80, 80, 255, 2)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_crosshair(x, y, size, r, g, b, a, thickness)</div>
+                    <div class="api-desc">draws a cross centered at the given screen position. <code>size</code> is half the length of each arm and defaults to 10.</div>
+                    <pre><code>enigma.draw_crosshair(960, 540, 12, 255, 255, 255, 255, 2)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_3d_box(x, y, z, width, height, depth, r, g, b, a, thickness)</div>
+                    <div class="api-desc">projects a box centered at a world position onto the screen and draws the visible edges. Color defaults to white and thickness to 1.</div>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_3d_circle(x, y, z, radius, r, g, b, a, thickness, segments)</div>
+                    <div class="api-desc">draws a horizontal circle around a world position. <code>segments</code> defaults to 24; values below 3 draw nothing. Color defaults to white and thickness to 1.</div>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.on_render(function callback)</div>
+                    <div class="api-desc">registers the function Enigma calls once per frame. Put frame-based drawing and native ESP requests inside it. Registering a callback again replaces the previous callback; it does not add a second one.</div>
+                    <pre><code>enigma.on_render(function()
+    enigma.draw_text(20, 20, "visible this frame", 255, 255, 255, 255)
+end)</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.stop_render()</div>
+                    <div class="api-desc">unregisters the current frame callback and clears queued Lua drawings and script ESP requests. Use this when a script should stop rendering but stay loaded.</div>
+                    <pre><code>enigma.stop_render()</code></pre>
+                </div>
+            </section>
+
+            <section id="projection">
+                <h2>world to screen</h2>
+                <div class="api-card">
+                    <div class="api-signature">enigma.WorldToScreen(worldX, worldY, worldZ)</div>
+                    <div class="api-desc">projects a 3D world position into overlay pixel coordinates. It returns <code>x, y, visible</code>. When the point is behind the camera or projection data is unavailable, <code>x</code> and <code>y</code> are <code>nil</code> and <code>visible</code> is false. A true result means the point is in front of the camera; it can still land outside the screen edges. Keep the capital letters exactly as shown.</div>
+                    <table class="param-table">
+                        <tr><th>param</th><th>type</th><th>description</th></tr>
+                        <tr><td class="param-name">worldX, worldY, worldZ</td><td class="param-type">number</td><td>world-space position, usually from <code>get_position</code></td></tr>
+                        <tr><td class="param-name">returns</td><td class="param-type">number, number, boolean</td><td>screen x, screen y, and whether the point can be drawn</td></tr>
+                    </table>
+                    <pre><code>local x, y, visible = enigma.WorldToScreen(0, 5, 0)
+if visible then
+    enigma.draw_circle(x, y, 5, 255, 80, 80, 255, 1, false)
+end</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_viewport_size() / enigma.get_screen_center() / enigma.is_on_screen(x, y)</div>
+                    <div class="api-desc"><code>get_viewport_size</code> returns width and height; <code>get_screen_center</code> returns the center point; <code>is_on_screen</code> checks whether a screen coordinate is inside those bounds. The first two return <code>nil, nil</code> if projection data is unavailable.</div>
+                    <pre><code>local center_x, center_y = enigma.get_screen_center()
+local x, y, visible = enigma.WorldToScreen(world_x, world_y, world_z)
+if visible and enigma.is_on_screen(x, y) then
+    enigma.draw_circle(x, y, 4, 255, 255, 255, 255, 1, true)
+end</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.distance(x1, y1, z1, x2, y2, z2)</div>
+                    <div class="api-desc">returns the straight-line distance between two 3D positions.</div>
+                    <pre><code>local distance = enigma.distance(ax, ay, az, bx, by, bz)</code></pre>
+                </div>
+                <p>Call it from <code>on_render</code> when you want the marker to follow a moving part. The screen coordinates are pixels in the overlay's screen space. Check bounds yourself if you want to skip points that are off-screen.</p>
+            </section>
+
+            <section id="native-esp">
+                <h2>using enigma's native esp</h2>
+                <p>These two helpers draw through Enigma's existing ESP renderer, so the box follows the current native box style. <code>request_native_esp</code> is for player addresses and can draw a box, a name, or both. Requests are cleared every frame, so make the request inside your render callback.</p>
+                <div class="api-card">
+                    <div class="api-signature">enigma.request_native_esp(playerAddress, r, g, b, drawBox, drawName)</div>
+                    <div class="api-desc">asks the native ESP pass to draw for one player for the current frame. Color values are RGB integers from 0 to 255; the two drawing flags are booleans.</div>
+                    <pre><code>enigma.on_render(function()
+    local players = enigma.get_children(enigma.get_players()) or {}
+    local local_player = enigma.get_local_player()
+
+    for _, player in ipairs(players) do
+        if player ~= local_player then
+            enigma.request_native_esp(player, 80, 170, 255, true, true)
+        end
+    end
+end)</code></pre>
+                    <p>Use only with valid player addresses from the Players service. The renderer handles the character projection; this call does not accept a character or part address.</p>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.draw_native_box(left, top, right, bottom, r, g, b, a)</div>
+                    <div class="api-desc">draws one screen-space rectangle using Enigma's native box style. Unlike <code>request_native_esp</code>, you provide the rectangle edges yourself.</div>
+                    <pre><code>enigma.on_render(function()
+    enigma.draw_native_box(100, 100, 180, 240, 80, 170, 255, 255)
+end)</code></pre>
+                </div>
+            </section>
+
+            <section id="script-ui">
+                <h2>building a small script ui</h2>
+                <p>The <code>enigma.ui</code> helpers wrap a small set of ImGui controls. Call them inside <code>on_render</code>. There is one render callback; registering another replaces the previous one. Keep checkbox and slider values in Lua variables so they persist between frames.</p>
+                <pre><code>local enabled = false
+local radius = 120
+
+enigma.on_render(function()
+    enigma.ui.set_next_window_size(260, 150)
+    if enigma.ui.begin_window("my script") then
+        enigma.ui.text("overlay settings")
+        enabled = enigma.ui.checkbox("enabled", enabled)
+        enigma.ui.separator()
+        radius = enigma.ui.slider_float("radius", radius, 20, 300)
+
+        if enabled and enigma.ui.button("status: on") then
+            enigma.log("overlay is enabled")
+        end
+    end
+    enigma.ui.end_window()
+end)</code></pre>
+                <p><code>checkbox</code> returns the updated value and whether it changed. <code>slider_float</code> does the same for its number. Always call <code>end_window</code> after <code>begin_window</code>, including when <code>begin_window</code> returns false.</p>
+                <div class="api-card">
+                    <div class="api-signature">ui functions</div>
+                    <div class="api-desc"><code>begin_window(title)</code> returns whether the window is open; always pair it with <code>end_window()</code>. <code>set_next_window_size(width, height)</code> sets the window size. <code>text(text)</code> displays a label, and <code>button(label)</code> returns true when clicked. <code>checkbox(label, value)</code> and <code>slider_float(label, value, min, max)</code> return the updated value and a changed flag. <code>separator()</code> draws a divider, and <code>same_line()</code> puts the next control beside the current one.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">more ui controls</div>
+                    <div class="api-desc"><code>slider_int(label, value, min, max)</code> works like <code>slider_float</code> but returns an integer. <code>input_text(label, initialText)</code> returns the edited text and a changed flag; text is limited to 255 characters. <code>combo(label, selected, choices)</code> takes a 1-based selected index and an array of strings, then returns the new index and a changed flag. <code>color_edit(label, r, g, b, a)</code> returns four color channels and a changed flag; channels can be 0–1 or 0–255.</div>
+                    <div class="api-desc"><code>collapsing_header(label)</code> and <code>tree_node(label)</code> return whether their section is open. Pair an open tree node with <code>tree_pop()</code>. <code>spacing()</code> adds a gap, and <code>dummy(width, height)</code> reserves blank space. <code>get_window_pos()</code> returns x and y; <code>get_window_size()</code> returns width and height. <code>set_next_window_pos(x, y)</code> sets the position the first time the next script window opens.</div>
+                    <pre><code>local mode = 1
+local choices = {"quiet", "spoken"}
+local name = "player"
+
+enigma.on_render(function()
+    if enigma.ui.begin_window("helper") then
+        mode = enigma.ui.combo("feedback", mode, choices)
+        name = enigma.ui.input_text("name", name)
+    end
+    enigma.ui.end_window()
+end)</code></pre>
+                </div>
+            </section>
+
+            <section id="input">
+                <h2>keyboard & mouse</h2>
+                <p>Key values are Windows virtual-key codes. For example, Space is <code>0x20</code> and Escape is <code>0x1B</code>. The cursor functions use screen coordinates.</p>
+                <div class="api-card">
+                    <div class="api-signature">enigma.is_key_down(key) / enigma.is_key_toggled(key)</div>
+                    <div class="api-desc"><code>is_key_down</code> is true while the key is held. <code>is_key_toggled</code> reads the key's toggle state, which is useful for keys such as Caps Lock.</div>
+                    <pre><code>if enigma.is_key_down(0x20) then
+    enigma.log("space is held")
+end</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.key_press(key) / enigma.key_down(key) / enigma.key_up(key)</div>
+                    <div class="api-desc"><code>key_press</code> presses and releases a key. Use <code>key_down</code> and <code>key_up</code> when you need to hold it. Make sure a script releases keys that it holds.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.mouse_move(x, y) / enigma.mouse_move_relative(dx, dy) / enigma.set_mouse_position(x, y)</div>
+                    <div class="api-desc"><code>mouse_move</code> moves the desktop cursor to a screen position. <code>mouse_move_relative</code> moves it by an offset. <code>set_mouse_position</code> sets the game's mouse position.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.mouse1_press() / mouse1_release() / mouse1_click() and mouse2_press() / mouse2_release() / mouse2_click()</div>
+                    <div class="api-desc">Press, release, or click the left (1) or right (2) mouse button. A press stays down until the matching release call.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.mouse_scroll(amount)</div>
+                    <div class="api-desc">scrolls the mouse wheel. Positive values scroll up; negative values scroll down.</div>
+                </div>
+            </section>
+
+            <section id="feedback">
+                <h2>sound & clipboard</h2>
+                <div class="api-card">
+                    <div class="api-signature">enigma.beep(frequency, durationMs)</div>
+                    <div class="api-desc">plays a tone. The defaults are 800 Hz and 200 ms.</div>
+                    <pre><code>enigma.beep(600, 120)</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.play_sound(path) / enigma.play_hitsound(type)</div>
+                    <div class="api-desc"><code>play_sound</code> plays a sound file at the given path. <code>play_hitsound</code> plays one of the built-in sounds; types 0–10 are available and the default is 0.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_clipboard() / enigma.set_clipboard(text)</div>
+                    <div class="api-desc">Reads or replaces clipboard text. If the clipboard cannot be read, <code>get_clipboard</code> returns an empty string.</div>
+                </div>
+            </section>
+
+            <section id="game-state">
+                <h2>players & game state</h2>
+                <p>These calls return numeric instance addresses, not Roblox Lua objects. Pass an address to Enigma's other helpers and check for <code>nil</code> when an instance may not be ready.</p>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_service(name) / get_lighting() / get_replicated_storage() / get_teams()</div>
+                    <div class="api-desc">returns the requested service address, or <code>nil</code> if it is not available. <code>get_service</code> takes the service name as a string.</div>
+                    <pre><code>local lighting = enigma.get_lighting()
+if lighting then
+    print(enigma.get_name(lighting))
+end</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_all_players() / get_local_character() / get_local_humanoid() / get_local_root_part()</div>
+                    <div class="api-desc"><code>get_all_players</code> returns a 1-based array of player addresses. The other calls return the local character, humanoid, or root part address, or <code>nil</code>.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_character_root_part(character) / get_player_from_character(character)</div>
+                    <div class="api-desc">returns the root part or player address for the given character. Returns <code>nil</code> if no matching instance is found.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.is_player_alive(playerOrHumanoid) / is_player_knocked(playerOrModel)</div>
+                    <div class="api-desc">returns a boolean describing the player's health or knocked state.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_cached_players() / get_cached_local_player()</div>
+                    <div class="api-desc"><code>get_cached_players</code> returns an array of records with <code>address</code>, <code>name</code>, <code>display_name</code>, <code>team</code>, <code>health</code>, <code>max_health</code>, <code>knocked</code>, <code>tool_name</code>, armor fields, <code>rig_type</code>, <code>humanoid</code>, and a <code>parts</code> table. The local-player version returns one record or <code>nil</code>; its table has the basic player fields and <code>parts</code>.</div>
+                    <pre><code>local players = enigma.get_cached_players()
+for _, player in ipairs(players) do
+    print(player.display_name .. ": " .. tostring(player.health))
+end</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_closest_player_to_cursor(maxDistance, teamCheck) / get_closest_player_to_character(maxDistance, teamCheck)</div>
+                    <div class="api-desc">The cursor version returns the player address, screen distance, screen x, and screen y. The character version returns the player address and world distance. Both return <code>nil</code> if there is no match; the distance limit defaults to a very large value and team checking defaults to false.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.whitelist_player(name) / unwhitelist_player(name) / is_whitelisted(name)</div>
+                    <div class="api-desc">adds or removes a player name from Enigma's whitelist, or checks whether the name is already there. <code>is_whitelisted</code> returns true or false.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.is_visible(x1, y1, z1, x2, y2, z2)</div>
+                    <div class="api-desc">checks visibility between two 3D points. If wall checking is unavailable, it returns true.</div>
+                </div>
+            </section>
+
+            <section id="camera-parts">
+                <h2>camera & movement</h2>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_camera_fov() / set_camera_fov(fov)</div>
+                    <div class="api-desc">reads or changes the camera field of view.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_camera_position() / set_camera_position(x, y, z)</div>
+                    <div class="api-desc">reads the camera position as three values, or sets it from x, y, and z.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_camera_rotation() / set_camera_rotation(r1, r2, r3, r4, r5, r6, r7, r8, r9)</div>
+                    <div class="api-desc">reads or sets the camera's 3×3 rotation matrix. The getter returns a 1-based table with nine numbers.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_camera_subject() / set_camera_subject(address) / get_camera_type() / set_camera_type(value)</div>
+                    <div class="api-desc">reads or changes the camera subject address and camera type value.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_gravity() / set_gravity(value) / get_tickrate() / set_tickrate(value)</div>
+                    <div class="api-desc">reads or changes gravity and tick rate. A getter returns <code>nil</code> if the value cannot be read.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_fallen_parts_destroy_height() / set_fallen_parts_destroy_height(value)</div>
+                    <div class="api-desc">reads or changes the height at which fallen parts are removed.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_velocity(part) / set_velocity(part, x, y, z)</div>
+                    <div class="api-desc">reads or sets a part's linear velocity. The getter returns x, y, z.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_angular_velocity(part) / set_angular_velocity(part, x, y, z)</div>
+                    <div class="api-desc">reads or sets a part's angular velocity. The getter returns x, y, z.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">part state helpers</div>
+                    <div class="api-desc"><code>get_part_anchored(part)</code> / <code>set_part_anchored(part, value)</code> and <code>get_part_cancollide(part)</code> / <code>set_part_cancollide(part, value)</code> read or change those flags. <code>get_part_transparency(part)</code> / <code>set_part_transparency(part, value)</code> read or change transparency. <code>get_part_color(part)</code> returns RGB values; <code>set_part_color(part, r, g, b)</code> accepts channels from 0–1 or 0–255.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_part_cframe(part) / set_part_cframe(part, x, y, z, r1, r2, r3, r4, r5, r6, r7, r8, r9)</div>
+                    <div class="api-desc"><code>get_part_cframe</code> returns a table with x, y, z, and a nine-number <code>rotation</code> table. The setter needs the part address and position; include all nine rotation values if you want to set rotation too.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">humanoid state helpers</div>
+                    <div class="api-desc"><code>get_humanoid_move_direction(humanoid)</code> returns x, y, z. The jump, sit, platform-stand, and auto-rotate states each have a matching getter and setter: <code>get_humanoid_jump</code> / <code>set_humanoid_jump</code>, <code>get_humanoid_sit</code> / <code>set_humanoid_sit</code>, <code>get_humanoid_platform_stand</code> / <code>set_humanoid_platform_stand</code>, and <code>get_humanoid_auto_rotate</code> / <code>set_humanoid_auto_rotate</code>. Setters take the humanoid address and a boolean. <code>set_humanoid_health</code>, <code>set_humanoid_max_health</code>, <code>set_humanoid_walk_speed</code>, <code>set_humanoid_jump_power</code>, and <code>set_humanoid_hip_height</code> take an address and a number.</div>
+                </div>
+            </section>
+
+            <section id="lighting">
+                <h2>lighting & values</h2>
+                <p>Lighting color getters return red, green, and blue as separate values. Setters accept color channels from 0–1 or 0–255. Some lighting getters accept an optional Lighting address; if you leave it out, they use the current Lighting service.</p>
+                <div class="api-card">
+                    <div class="api-signature">clock time, brightness, and fog</div>
+                    <div class="api-desc"><code>get_clock_time([lighting])</code>, <code>get_brightness([lighting])</code>, <code>get_fog_start([lighting])</code>, and <code>get_fog_end([lighting])</code> read those values. Use <code>set_clock_time</code>, <code>set_brightness</code>, <code>set_fog_start</code>, or <code>set_fog_end</code> to change them; each setter takes just the new value, or a Lighting address followed by the value. <code>get_fog_color([lighting])</code> returns RGB; <code>set_fog_color(r, g, b)</code> changes it.</div>
+                    <pre><code>local brightness = enigma.get_brightness()
+enigma.set_brightness(2.0)
+enigma.set_clock_time(14.5)</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">ambient light and exposure</div>
+                    <div class="api-desc"><code>get_ambient()</code> / <code>set_ambient(r, g, b)</code> and <code>get_outdoor_ambient()</code> / <code>set_outdoor_ambient(r, g, b)</code> read or change the two ambient colors. <code>get_global_shadows()</code> / <code>set_global_shadows(value)</code> read or change shadows. <code>get_exposure()</code> / <code>set_exposure(value)</code> read or change exposure compensation.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_value(instance) / set_value(instance, value)</div>
+                    <div class="api-desc">reads or changes a BoolValue, IntValue, NumberValue, StringValue, or ObjectValue. The value type is picked from the instance's class. A read returns <code>nil</code> when the value cannot be read.</div>
+                </div>
+            </section>
+
+            <section id="math">
+                <h2>math helpers</h2>
+                <p>Vector helpers take x, y, z as separate numbers. A vector result comes back as three values.</p>
+                <div class="api-card">
+                    <div class="api-signature">enigma.math_clamp(value, min, max) / math_lerp(start, finish, amount)</div>
+                    <div class="api-desc"><code>math_clamp</code> keeps a number inside the given range. <code>math_lerp</code> returns a point between two numbers; an amount of 0 returns the start and 1 returns the finish.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.math_vec3_add(ax, ay, az, bx, by, bz) / math_vec3_sub(ax, ay, az, bx, by, bz)</div>
+                    <div class="api-desc">adds or subtracts two 3D vectors. Each returns x, y, z.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.math_vec3_mul(x, y, z, scale) / math_vec3_len(x, y, z) / math_vec3_norm(x, y, z)</div>
+                    <div class="api-desc"><code>mul</code> scales a vector, <code>len</code> returns its length, and <code>norm</code> returns its normalized x, y, z values.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.math_vec3_dot(ax, ay, az, bx, by, bz) / math_vec3_cross(ax, ay, az, bx, by, bz)</div>
+                    <div class="api-desc"><code>dot</code> returns one number. <code>cross</code> returns x, y, z.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.math_look_at(ex, ey, ez, tx, ty, tz)</div>
+                    <div class="api-desc">builds a 3×3 rotation table that points from the first position toward the second.</div>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_time() / get_fps()</div>
+                    <div class="api-desc"><code>get_time</code> returns elapsed milliseconds from a steady clock, which is useful for measuring time between calls. It is not the time of day. <code>get_fps</code> returns the current frame rate.</div>
+                </div>
+            </section>
+
+            <!-- Memory Reading and Writing -->
+            <section id="memory-operations">
+                <h2>raw memory operations</h2>
+                <p>These functions let you read and write directly to virtual memory addresses. Addresses are 64-bit unsigned integers (represented as numbers in Lua).</p>
+                <div class="api-card">
+                    <div class="api-signature">enigma.read_byte / read_int / read_float / read_double / read_qword(uint64 address)</div>
+                    <div class="api-desc">reads the value at the given memory address and returns it.
+                        <ul class="bullets" style="margin-top: 10px;">
+                            <li><code>read_byte</code>: reads 1 byte (uint8)</li>
+                            <li><code>read_int</code>: reads 4 bytes (int32)</li>
+                            <li><code>read_float</code>: reads 4 bytes float (single precision)</li>
+                            <li><code>read_double</code>: reads 8 bytes float (double precision)</li>
+                            <li><code>read_qword</code>: reads 8 bytes pointer/unsigned integer (uint64)</li>
+                        </ul>
+                    </div>
+                    <pre><code>local address = 0x140e83bf8
+local val = enigma.read_int(address)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.read_string(uint64 address)</div>
+                    <div class="api-desc">reads a null-terminated string at the specified memory address.</div>
+                    <pre><code>local name = enigma.read_string(player_address + 0x48)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.write_byte / write_int / write_float / write_double / write_qword(uint64 address, value)</div>
+                    <div class="api-desc">writes a value to the specified virtual memory address.</div>
+                    <pre><code>-- write gravity modification (workspace + world + steps offset)
+local world = enigma.read_qword(enigma.get_workspace() + 0x148)
+enigma.write_float(world + 0x130, 35.0)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.write_string(uint64 address, string value)</div>
+                    <div class="api-desc">writes a string buffer directly to the memory address.</div>
+                    <pre><code>enigma.write_string(part_address + 0x28, "CustomLimb")</code></pre>
+                </div>
+            </section>
+
+            <!-- Workspace Traversal -->
+            <section id="roots">
+                <h2>get roots</h2>
+                <p>helper functions to retrieve base root pointers in memory.</p>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_workspace() / enigma.get_players()</div>
+                    <div class="api-desc">returns the current address for the Workspace instance or Players service. Pass the result to hierarchy helpers; it is not a Roblox Lua object.</div>
+                    <pre><code>local workspace_addr = enigma.get_workspace()
+local players_service = enigma.get_players()</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_local_player()</div>
+                    <div class="api-desc">looks up the current local player's address when called, so scripts do not need to read the LocalPlayer offset themselves. Returns <code>nil</code> if the Players service or local player is not available yet. This is an address; <code>get_player_name()</code> returns the username string.</div>
+                    <pre><code>local player = enigma.get_local_player()
+if player then
+    print("you are: " .. enigma.get_name(player))
+end</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_datamodel() / enigma.get_camera() / enigma.get_game_id()</div>
+                    <div class="api-desc"><code>get_datamodel</code> returns the root DataModel address; <code>get_camera</code> looks up Workspace's Camera child; and <code>get_game_id</code> returns the current GameId, or <code>0</code> before the DataModel is ready. Address lookups return <code>nil</code> if the object is not ready.</div>
+                    <pre><code>local data_model = enigma.get_datamodel()
+local camera = enigma.get_camera()
+local game_id = enigma.get_game_id()</code></pre>
+                </div>
+            </section>
+
+            <section id="navigation">
+                <h2>instance traversal</h2>
+                <p>These helpers search children of an instance address. Names and class names must match the game instance exactly, including capitalization.</p>
+                
+                <div class="api-card">
+                    <div class="api-signature">enigma.find_first_child(uint64 parent, string name)</div>
+                    <div class="api-desc">searches for a child by name and returns its address. returns nil if not found.</div>
+                    <pre><code>local workspace = enigma.get_workspace()
+local camera = enigma.find_first_child(workspace, "Camera")
+if camera then
+    print("found camera at: " .. camera)
+end</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.find_first_child_of_class(uint64 parent, string className)</div>
+                    <div class="api-desc">searches for a child containing the exact ClassName and returns its address.</div>
+                    <pre><code>local local_player = enigma.get_local_player()
+if local_player then
+    local backpack = enigma.find_first_child_of_class(local_player, "Backpack")
+    print("backpack: " .. tostring(backpack))
+end</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_children(uint64 parent)</div>
+                    <div class="api-desc">returns a 1-based Lua array of child addresses. If the parent address is invalid or zero, it returns <code>nil</code>.</div>
+                    <pre><code>local children = enigma.get_children(enigma.get_workspace()) or {}
+for index, child_addr in ipairs(children) do
+    local name = enigma.get_name(child_addr)
+    local class = enigma.get_class_name(child_addr)
+    print("[" .. index .. "] " .. name .. " (" .. class .. ")")
+end</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_name(uint64 instance) / enigma.get_class_name(uint64 instance) / enigma.get_parent(uint64 instance)</div>
+                    <div class="api-desc">helper wrappers to read name, classname, or parent pointers of any instance.</div>
+                    <pre><code>local name = enigma.get_name(part_addr)
+local parent = enigma.get_parent(part_addr)</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_child_count(parent) / enigma.is_class(instance, className)</div>
+                    <div class="api-desc">returns the number of direct children or checks for an exact class name. <code>is_class</code> does not check class inheritance.</div>
+                    <pre><code>local count = enigma.get_child_count(workspace)
+local is_part = enigma.is_class(some_instance, "Part")</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_children_by_class(parent, className) / enigma.get_children_named(parent, name)</div>
+                    <div class="api-desc">returns an array containing only direct children that match the exact class or name. An invalid parent returns nil; a valid parent with no matches returns an empty table.</div>
+                    <pre><code>local parts = enigma.get_children_by_class(workspace, "Part") or {}
+local named = enigma.get_children_named(workspace, "Camera") or {}</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_full_name(instance) / enigma.get_ancestor(instance, className) / enigma.get_instance_info(instance)</div>
+                    <div class="api-desc"><code>get_full_name</code> joins the instance's parent names with dots. <code>get_ancestor</code> walks upward and returns the first matching class address. <code>get_instance_info</code> returns a table with <code>address</code>, <code>name</code>, <code>class_name</code>, <code>parent</code>, and <code>child_count</code>.</div>
+                    <pre><code>local info = enigma.get_instance_info(part_addr)
+print(info.name .. " is a " .. info.class_name)
+print(enigma.get_full_name(part_addr))</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">enigma.find_descendant(parent, name) / enigma.get_descendants(parent)</div>
+                    <div class="api-desc">searches below a parent by exact name, or returns a 1-based array of descendant addresses. Both stop after visiting 10,000 instances so a very large tree cannot run without a bound.</div>
+                    <pre><code>local head = enigma.find_descendant(character, "Head")
+local descendants = enigma.get_descendants(character) or {}
+print("descendants: " .. #descendants)</code></pre>
+                </div>
+                <div class="api-card">
+                    <div class="api-signature">player and humanoid helpers</div>
+                    <div class="api-desc"><code>get_display_name(player)</code> returns the display name; <code>get_player_user_id(player)</code> returns the numeric UserId; <code>get_player_account_age(player)</code> returns account age in days; <code>get_player_team(player)</code> returns the Team instance address or nil; and <code>get_player_team_color(player)</code> returns the numeric TeamColor. <code>get_player_character(player)</code>, <code>get_player_humanoid(player)</code>, and <code>get_character_part(player, name)</code> return addresses or nil. The humanoid helpers return health/max health, walk speed, jump power, hip height, state id, and rig type through <code>get_humanoid_health</code>, <code>get_humanoid_walk_speed</code>, <code>get_humanoid_jump_power</code>, <code>get_humanoid_hip_height</code>, <code>get_humanoid_state</code>, and <code>get_humanoid_rig_type</code>.</div>
+                    <pre><code>local character = enigma.get_player_character(player)
+local humanoid = enigma.get_player_humanoid(player)
+local head = enigma.get_character_part(player, "Head")
+if humanoid then
+    local health, max_health = enigma.get_humanoid_health(humanoid)
+    print(enigma.get_display_name(player) .. ": " .. tostring(health) .. "/" .. tostring(max_health))
+end</code></pre>
+                </div>
+            </section>
+
+            <!-- Manipulators -->
+            <section id="properties">
+                <h2>part manipulators</h2>
+                <p>These helpers work with BasePart addresses. Position, size, and rotation getters return three numbers or a 1-based table; if a part cannot be resolved, some getters return no values. Setters do not return a success flag.</p>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_position(uint64 part) / enigma.set_position(uint64 part, float x, float y, float z)</div>
+                    <div class="api-desc">retrieves or sets the physical coordinates of a part.</div>
+                    <pre><code>-- Teleport player up by 20 studs
+local hrp = enigma.find_first_child(char_addr, "HumanoidRootPart")
+if hrp then
+    local x, y, z = enigma.get_position(hrp)
+    enigma.set_position(hrp, x, y + 20.0, z)
+end</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_size(uint64 part) / enigma.set_size(uint64 part, float x, float y, float z)</div>
+                    <div class="api-desc">retrieves or sets the scale size of a part in studs.</div>
+                    <pre><code>-- expand a player's head hitbox size to 10x10x10 studs
+local head = enigma.find_first_child(char_addr, "Head")
+if head then
+    enigma.set_size(head, 10.0, 10.0, 10.0)
+end</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_rotation(uint64 part) / enigma.set_rotation(uint64 part, float m11, float m12, ... float m33)</div>
+                    <div class="api-desc">gets or sets the 3x3 rotation matrix for the part. <code>get_rotation</code> returns an array table of 9 matrix coefficients. <code>set_rotation</code> accepts 9 numbers in order.</div>
+                    <pre><code>-- reset rotation matrix of a part back to identity matrix
+enigma.set_rotation(part_addr, 
+    1.0, 0.0, 0.0, 
+    0.0, 1.0, 0.0, 
+    0.0, 0.0, 1.0
+)</code></pre>
+                </div>
+            </section>
+
+            <!-- State Utilities -->
+            <section id="utilities">
+                <h2>client state utilities</h2>
+                <p><code>get</code> and <code>set</code> read or change a limited list of Enigma settings. They do not create arbitrary settings; unknown keys return <code>nil</code> from <code>get</code> and are ignored by <code>set</code>.</p>
+                <div class="api-card">
+                    <div class="api-signature">enigma.get(string key) / enigma.set(string key, value)</div>
+                    <div class="api-desc">Only the keys listed here are supported. Boolean keys take <code>true</code> or <code>false</code>; numeric keys take numbers.</div>
+                    <table class="param-table">
+                        <tr><th>type</th><th>supported keys</th></tr>
+                        <tr><td class="param-type">boolean</td><td><code>aimbot_enabled</code>, <code>aimbot_smoothing</code>, <code>aimbot_prediction</code>, <code>aimbot_sticky</code>, <code>aimbot_teamcheck</code>, <code>aimbot_draw_fov</code>, <code>aimbot_draw_snap</code>, <code>silent_enabled</code>, <code>silent_prediction</code>, <code>silent_sticky</code>, <code>silent_teamcheck</code>, <code>silent_draw_fov</code>, <code>silent_draw_snap</code>, <code>silent_sync_aimbot</code>, <code>silent_draw_dot</code>, <code>misc_antiafk</code></td></tr>
+                        <tr><td class="param-type">number</td><td><code>aimbot_fov</code>, <code>aimbot_smoothing_x</code>, <code>aimbot_smoothing_y</code>, <code>aimbot_prediction_x</code>, <code>aimbot_prediction_y</code>, <code>silent_fov</code>, <code>silent_prediction_x</code>, <code>silent_prediction_y</code></td></tr>
+                    </table>
+                    <pre><code>local current_fov = enigma.get("silent_fov")
+print("silent fov: " .. tostring(current_fov))
+
+enigma.set("silent_enabled", true)
+enigma.set("silent_fov", 180)</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_cursor_pos()</div>
+                    <div class="api-desc">returns <code>x, y</code> representing the current desktop cursor screen coordinates in pixels.</div>
+                    <pre><code>local cur_x, cur_y = enigma.get_cursor_pos()</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-signature">enigma.get_player_name() / enigma.get_place_id()</div>
+                    <div class="api-desc">returns the logged in local player username or active PlaceId.</div>
+                    <pre><code>local place = enigma.get_place_id()
+if place == 292439477 then
+    enigma.log("Phantom Forces session detected")
+end</code></pre>
+                </div>
+            </section>
+        </main>
+    </div>
+
+</body>
+</html>
