@@ -1,17 +1,6 @@
 #pragma once
 /* =============================================================
-/*                       theo's offsets                         
-/*                  https://offsets.imtheo.lol                  
-/* -------------------------------------------------------------
-/*  Dumped With     : RbxDumperV2                               
-/*  Source code     : https://git.imtheo.lol/theo/RbxDumperV2   
-/*  Roblox Version  : version-5a21b87bbc2641cf
-/*  Dumper Version  : 2.2.4
-/*  Dumped At       : 09:40 28/10/2026 (GMT)
-/*  Total Offsets   : 392
-/* -------------------------------------------------------------
-/*  Join the discord!                                           
-/*  https://offsets.imtheo.lol/discord                          
+/*  Roblox Version  : version-5a21b87bbc2641cf                      
 /* =============================================================
 */
 
@@ -459,7 +448,7 @@ namespace Offsets {
 
     namespace RunService {
          inline constexpr uintptr_t HeartbeatFPS = 0xc8;
-         inline constexpr uintptr_t HeartbeatTask = 0x7208;
+         inline constexpr uintptr_t HeartbeatTask = 0x7e08;
     }
 
     namespace Script {
