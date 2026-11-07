@@ -1,13 +1,13 @@
 #pragma once
 /* =============================================================
-/*  Roblox Version  : version-5a21b87bbc2641cf                      
-/* =============================================================
+/*  Source code     : https://git.imtheo.lol/theo/RbxDumperV2   
+/*  Roblox Version  : version-f0ea5da9412f4e35
 */
 
 #include <cstdint>
 #include <string>
 namespace Offsets {
-    inline std::string ClientVersion = "version-5a21b87bbc2641cf";
+    inline std::string ClientVersion = "version-f0ea5da9412f4e35";
 
     namespace AirProperties {
          inline constexpr uintptr_t AirDensity = 0x18;
@@ -167,7 +167,7 @@ namespace Offsets {
     }
 
     namespace FakeDataModel {
-         inline constexpr uintptr_t Pointer = 0x8d06600;
+         inline constexpr uintptr_t Pointer = 0x8eb6960;
          inline constexpr uintptr_t RealDataModel = 0x1f8;
     }
 
@@ -236,7 +236,7 @@ namespace Offsets {
          inline constexpr uintptr_t RigType = 0x1b4;
          inline constexpr uintptr_t SeatPart = 0xf0;
          inline constexpr uintptr_t Sit = 0x1d3;
-         inline constexpr uintptr_t TargetPoint = 0x0;
+         inline constexpr uintptr_t TargetPoint = 0x140;
          inline constexpr uintptr_t UseJumpPower = 0x1d6;
          inline constexpr uintptr_t WalkTimer = 0x0;
          inline constexpr uintptr_t Walkspeed = 0x1c4;
@@ -448,7 +448,7 @@ namespace Offsets {
 
     namespace RunService {
          inline constexpr uintptr_t HeartbeatFPS = 0xc8;
-         inline constexpr uintptr_t HeartbeatTask = 0x7e08;
+         inline constexpr uintptr_t HeartbeatTask = 0x81c8;
     }
 
     namespace Script {
@@ -481,14 +481,14 @@ namespace Offsets {
     }
 
     namespace Sound {
-         inline constexpr uintptr_t IsPlaying = 0x128;
-         inline constexpr uintptr_t Looped = 0x125;
-         inline constexpr uintptr_t PlaybackSpeed = 0x104;
-         inline constexpr uintptr_t RollOffMaxDistance = 0x108;
-         inline constexpr uintptr_t RollOffMinDistance = 0x10c;
+         inline constexpr uintptr_t IsPlaying = 0x130;
+         inline constexpr uintptr_t Looped = 0x12d;
+         inline constexpr uintptr_t PlaybackSpeed = 0x10c;
+         inline constexpr uintptr_t RollOffMaxDistance = 0x110;
+         inline constexpr uintptr_t RollOffMinDistance = 0x114;
          inline constexpr uintptr_t SoundGroup = 0xd0;
          inline constexpr uintptr_t SoundId = 0xb0;
-         inline constexpr uintptr_t Volume = 0x118;
+         inline constexpr uintptr_t Volume = 0x120;
     }
 
     namespace SpawnLocation {
@@ -531,7 +531,7 @@ namespace Offsets {
          inline constexpr uintptr_t JobName = 0x18;
          inline constexpr uintptr_t JobStart = 0xc8;
          inline constexpr uintptr_t MaxFPS = 0xb0;
-         inline constexpr uintptr_t Pointer = 0x8c9d698;
+         inline constexpr uintptr_t Pointer = 0x8e4d7b8;
     }
 
     namespace Team {
@@ -582,8 +582,8 @@ namespace Offsets {
     namespace VisualEngine {
          inline constexpr uintptr_t Dimensions = 0xb10;
          inline constexpr uintptr_t FakeDataModel = 0xaf0;
-         inline constexpr uintptr_t Pointer = 0x879a218;
-         inline constexpr uintptr_t RenderView = 0xc40;
+         inline constexpr uintptr_t Pointer = 0x8942e38;
+         inline constexpr uintptr_t RenderView = 0xc50;
          inline constexpr uintptr_t ViewMatrix = 0x1b0;
     }
 
@@ -605,7 +605,7 @@ namespace Offsets {
     namespace Workspace {
          inline constexpr uintptr_t CurrentCamera = 0x4a0;
          inline constexpr uintptr_t DistributedGameTime = 0x4c0;
-         inline constexpr uintptr_t ReadOnlyGravity = 0x9c0;
+         inline constexpr uintptr_t ReadOnlyGravity = 0x9d0;
          inline constexpr uintptr_t World = 0x3f8;
     }
 
@@ -614,7 +614,7 @@ namespace Offsets {
          inline constexpr uintptr_t FallenPartsDestroyHeight = 0x20c;
          inline constexpr uintptr_t Gravity = 0x218;
          inline constexpr uintptr_t Primitives = 0x2a0;
-         inline constexpr uintptr_t worldStepsPerSec = 0x858;
+         inline constexpr uintptr_t worldStepsPerSec = 0x868;
     }
 
 }
